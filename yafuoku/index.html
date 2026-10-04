@@ -764,7 +764,8 @@
   function exportText() { return state.items.map((it, i) => `===== ${i + 1}. ${it.sku || ''} ${it.maker} ${it.model} =====\n${titleOf(it)}\n\n${descOf(it)}\n`).join('\n'); }
   function setExport(text, filename, mime) {
     $('export-out').value = text; const a = $('dl-link');
-    try { if (a.href && a.href.startsWith('blob:')) URL.revokeObjectURL(a.href); a.href = URL.createObjectURL(new Blob([text], { type: mime })); a.download = filename; a.hidden = false; } catch (e) { a.hidden = true; }
+    const embedded = (() => { try { return window.self !== window.top; } catch (e) { return true; } })(); // 埋め込み表示（アーティファクト等）ではダウンロードが無効
+    try { if (a.href && a.href.startsWith('blob:')) URL.revokeObjectURL(a.href); a.href = URL.createObjectURL(new Blob([text], { type: mime })); a.download = filename; a.hidden = embedded; } catch (e) { a.hidden = true; }
     $('export-status').textContent = state.items.length + ' 件を書き出しました';
   }
   $('btn-export-csv').addEventListener('click', () => setExport(exportCSV(), 'saya-stock.csv', 'text/csv;charset=utf-8'));
