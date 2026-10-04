@@ -68,8 +68,8 @@
   legend { font-family: var(--font-display); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; padding: 0; }
   .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 10px; }
   .row.three { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-  label.f { display: flex; flex-direction: column; gap: 3px; font-size: 0.8rem; color: var(--muted); min-width: 0; }
-  label.f > span .req { color: var(--accent); margin-left: 2px; }
+  .f { display: flex; flex-direction: column; gap: 3px; font-size: 0.8rem; color: var(--muted); min-width: 0; }
+  .f > span .req { color: var(--accent); margin-left: 2px; }
   input[type="text"], input[type="number"], select, textarea { font: inherit; font-size: 0.95rem; color: var(--fg); background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; width: 100%; min-width: 0; }
   textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
   input.mono, .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
@@ -84,8 +84,13 @@
   button.danger { color: var(--bad); border-color: var(--bad); background: transparent; }
   button.small { padding: 4px 9px; font-size: 0.8rem; }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
+  select.small { width: auto; padding: 4px 6px; font-size: 0.8rem; font-family: var(--font-display); border-color: var(--line-strong); background: var(--surface); }
+  .toolbar select { width: auto; max-width: 260px; }
+  .toolbar .meta { font-size: 0.8rem; color: var(--muted); margin-left: auto; }
   .note { font-size: 0.8rem; color: var(--muted); margin: 4px 0 0; }
   .status { font-size: 0.85rem; color: var(--ok); min-height: 1.2em; }
+  .status.warn { color: var(--warn); }
+  .status.bad { color: var(--bad); }
 
   .out { margin-bottom: 16px; }
   .out .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; }
@@ -127,7 +132,7 @@
   .export-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
   @media (max-width: 860px) { .export-grid { grid-template-columns: minmax(0, 1fr); } }
   textarea.export { font-family: var(--font-mono); font-size: 0.78rem; min-height: 180px; white-space: pre; }
-  .confirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 0.9rem; }
+  .confirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 0.9rem; position: sticky; bottom: 0; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 6px; padding: 8px 12px; margin-top: 8px; }
   .confirm[hidden] { display: none; }
   footer { margin-top: 32px; font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; }
   @media (prefers-reduced-motion: no-preference) { .status { transition: opacity 0.3s; } }
@@ -189,15 +194,15 @@
               <label class="f"><span>シャッター回数</span>
                 <input type="text" id="f-shutter" class="mono" placeholder="約12,000"></label>
             </div>
-            <label class="f" style="margin-top:8px"><span>外観</span>
-              <div class="chips" id="chips-exterior"></div>
-              <input type="text" id="f-exterior" placeholder="補足があれば（例: 底面に三脚座跡）"></label>
-            <label class="f" style="margin-top:8px"><span>光学・ファインダー</span>
-              <div class="chips" id="chips-optics"></div>
-              <input type="text" id="f-optics" placeholder="補足があれば"></label>
-            <label class="f" style="margin-top:8px"><span>動作</span>
-              <div class="chips" id="chips-function"></div>
-              <input type="text" id="f-function" placeholder="補足があれば（例: 上面液晶に一部欠け）"></label>
+            <div class="f" style="margin-top:8px"><span id="lbl-ext">外観</span>
+              <div class="chips" id="chips-exterior" role="group" aria-labelledby="lbl-ext"></div>
+              <input type="text" id="f-exterior" aria-label="外観の補足" placeholder="補足があれば（例: 底面に三脚座跡）"></div>
+            <div class="f" style="margin-top:8px"><span id="lbl-opt">光学・ファインダー</span>
+              <div class="chips" id="chips-optics" role="group" aria-labelledby="lbl-opt"></div>
+              <input type="text" id="f-optics" aria-label="光学の補足" placeholder="補足があれば（例: 後玉周辺に点カビ1箇所、撮影への影響なし）"></div>
+            <div class="f" style="margin-top:8px"><span id="lbl-fn">動作</span>
+              <div class="chips" id="chips-function" role="group" aria-labelledby="lbl-fn"></div>
+              <input type="text" id="f-function" aria-label="動作の補足" placeholder="補足があれば（例: 上面液晶に一部欠け）"></div>
           </fieldset>
 
           <fieldset>
@@ -225,7 +230,7 @@
           </fieldset>
 
           <div class="actions">
-            <button type="submit" class="primary" id="btn-save">在庫リストに保存</button>
+            <button type="submit" class="primary" id="btn-save">在庫リストに追加</button>
             <button type="button" class="ghost" id="btn-new">新規カード</button>
             <button type="button" class="ghost" id="btn-dup">同型番で複製</button>
             <span class="status" id="form-status" aria-live="polite"></span>
@@ -251,6 +256,7 @@
             <button type="button" class="small" data-copy="o-desc">コピー</button>
             <button type="button" class="small" id="btn-regen-desc">自動生成に戻す</button>
             <button type="button" class="small" id="btn-copy-both">タイトル＋説明をコピー</button>
+            <span class="note" id="desc-note"></span>
           </div>
         </div>
         <div class="out">
@@ -264,11 +270,11 @@
         <div class="out">
           <div class="head"><strong>相場を調べる</strong><span class="counter" id="search-q"></span></div>
           <div class="links" id="price-links"></div>
-          <p class="note">ヤフオクの落札相場は直近の落札分が無料で見られます。開始価格と即決価格は実売の中央値、下限メモは買取価格を基準に。</p>
+          <p class="note">ヤフオクの落札相場は直近の落札分が無料で見られます。開始価格と即決価格は実売の中央値を基準に。下限メモはマップカメラ等の買取価格を基準に（買取ページで型番を入力して確認）。</p>
         </div>
         <div class="out">
           <div class="head"><strong>写真チェックリスト</strong><span class="counter" id="photo-count"></span></div>
-          <p class="note">10枚まで・JPEG・1枚5MB以内・長辺1200px。出品後は追加のみで差し替え不可。説明文に書いた不具合は必ず写す。</p>
+          <p class="note">10枚まで・JPEG・1枚5MB以内（長辺1200pxを超えると自動縮小）。出品後は追加のみで差し替え不可。説明文に書いた不具合は必ず写す。</p>
           <ul class="photo-list" id="photo-list"></ul>
         </div>
       </div>
@@ -288,6 +294,8 @@
       <input type="text" id="list-filter" placeholder="検索（型番・メーカー・管理番号）">
       <select id="list-status-filter"><option value="">すべてのステータス</option></select>
       <button type="button" class="small" id="btn-clear-samples">例のデータを消す</button>
+      <button type="button" class="small danger" id="btn-clear-all">全件削除</button>
+      <span class="meta" id="backup-meta"></span>
     </div>
     <div class="table-wrap">
       <table id="list-table">
@@ -298,7 +306,7 @@
     </div>
     <div class="confirm" id="confirm-delete" hidden>
       <span id="confirm-text"></span>
-      <button type="button" class="danger small" id="btn-confirm-yes">削除する</button>
+      <button type="button" class="danger small" id="btn-confirm-yes">実行する</button>
       <button type="button" class="small" id="btn-confirm-no">やめる</button>
     </div>
   </section>
@@ -308,7 +316,7 @@
     <div class="export-grid">
       <div class="card">
         <h2>まとめて追加 <span class="hint">1行＝1品</span></h2>
-        <p class="note">区切りはカンマかタブ。列の順番: 種別, メーカー, 型番, グレード, 開始価格, 即決価格, 管理番号（後ろは省略可）。表計算ソフトからのコピペで入ります。</p>
+        <p class="note">列の順番: 種別, メーカー, 型番, グレード, 開始価格, 即決価格, 管理番号（後ろは省略可）。表計算ソフトからタブ区切りで貼れます。手入力ならカンマか「、」区切り（型番に「、」を含むときはタブ区切りで）。1行目が「管理番号,種別,…」のヘッダーなら列名で読み取るので、このツールのCSV書き出しもそのまま貼り戻せます。<br>種別: ミラーレス一眼／デジタル一眼レフ／コンパクトデジカメ／フィルム一眼レフ／レンジファインダー／中判・大判／交換レンズ／ストロボ／アクセサリー・その他（空欄や不明は型番から推定）。グレード: 新品／未使用品／新同品／美品／良品／並品／難あり／ジャンク（不明は良品）。</p>
         <textarea class="export" id="bulk-in" placeholder="交換レンズ, Canon, RF24-70mm F2.8 L IS USM, 美品, 1, 198000, L-001
 ミラーレス一眼, SONY, α7 IV ボディ, 良品, 1, , B-014"></textarea>
         <div class="actions">
@@ -332,9 +340,11 @@
         <h2 style="margin-top:18px">バックアップから復元</h2>
         <textarea class="export" id="import-in" placeholder="JSONを貼り付け"></textarea>
         <div class="actions">
-          <button type="button" class="small" id="btn-import">復元（今のリストに追加）</button>
+          <button type="button" class="small" id="btn-import">追加して復元</button>
+          <button type="button" class="small danger" id="btn-import-replace">置き換えて復元</button>
           <span class="status" id="import-status" aria-live="polite"></span>
         </div>
+        <p class="note">「追加して復元」は同じ管理IDの品を飛ばすので、同じバックアップを2回貼っても重複しません。「置き換えて復元」は今のリストと既定値を丸ごと差し替えます（確認あり）。</p>
       </div>
     </div>
   </section>
@@ -362,6 +372,7 @@
       <p class="note">終了は日曜21〜23時台が通説（公式統計はなし）。複数出品は10〜30分ずつずらす。手数料は落札価格の10%一律で計算します。</p>
       <label class="f" style="margin-top:8px"><span>説明文の末尾に入れる定型文</span>
         <textarea id="s-footer"></textarea></label>
+      <p class="note">「中古品です」「新品・未開封です」の区別と返品方針は自動で入るので、定型文には書かなくて大丈夫です。</p>
       <div class="actions">
         <button type="button" class="primary" id="btn-save-settings">既定値を保存</button>
         <span class="status" id="settings-status" aria-live="polite"></span>
@@ -381,18 +392,26 @@
   const TITLE_COUNT_MODE = 'chars';     // 'chars' = 全角半角とも1文字 / 'width' = 半角0.5
   const FEE_RATE = 0.10;                // 落札システム利用料（2024-06-04以降、会員・非会員とも10%）
   const STORE_FEE_RATE = 0.077;         // ストア出品の落札システム利用料
-  const SHIP_COST = { '60サイズ': 750, '80サイズ': 850, '100サイズ': 1050, '120サイズ': 1200, '140サイズ': 1400, '宅急便コンパクト': 560, 'ネコポス・ゆうパケット': 215 }; // おてがる配送 出品者負担（2025-11-10改定後、コンパクトは専用BOX70円込）
+  // おてがる配送 出品者負担・全国一律（2025-11-10改定後）。宅急便とゆうパックは60〜160同額。180・200は宅急便のみ。コンパクトは専用BOX70円込。小型便はゆうパケット215円で概算（ネコポスは210円）
+  const SHIP_COST = { '60サイズ': 750, '80サイズ': 850, '100サイズ': 1050, '120サイズ': 1200, '140サイズ': 1400, '160サイズ': 1700, '180サイズ': 2100, '200サイズ': 2500, '宅急便コンパクト': 560, 'ネコポス・ゆうパケット': 215 };
   const SHIP_SIZES = Object.keys(SHIP_COST);
-  const CATEGORY = { // ヤフオク カテゴリID（2026-10時点、要再確認）
-    'ミラーレス一眼': { name: 'デジタルカメラ > ミラーレス一眼', id: 2084305443 },
-    'デジタル一眼レフ': { name: 'デジタルカメラ > デジタル一眼', id: 2084261634 },
-    'コンパクトデジカメ': { name: 'デジタルカメラ > コンパクトデジタルカメラ', id: 2084261642 },
-    'フィルムカメラ': { name: 'フィルムカメラ', id: 23640 },
-    '交換レンズ': { name: 'レンズ > 一眼カメラ用（AF／MF）> メーカー別', id: 23684 },
-    'ストロボ': { name: 'アクセサリー > ストロボ、照明 > 対応メーカー別', id: 23744 },
-    'アクセサリー・その他': { name: 'カメラ、光学機器 > アクセサリー', id: 23636 },
+  const KINDS = ['ミラーレス一眼', 'デジタル一眼レフ', 'コンパクトデジカメ', 'フィルム一眼レフ', 'レンジファインダー', '中判・大判', '交換レンズ', 'ストロボ', 'アクセサリー・その他'];
+  const BODY_KINDS = new Set(['ミラーレス一眼', 'デジタル一眼レフ', 'コンパクトデジカメ']);
+  const FILM_KINDS = new Set(['フィルム一眼レフ', 'レンジファインダー', '中判・大判']);
+  // ヤフオク カテゴリID（2026-10時点、要再確認）。フィルムカメラ配下のメーカー別IDと「アクセサリー」自体のIDは未取得
+  const CATEGORY = {
+    'ミラーレス一眼': { name: 'デジタルカメラ > ミラーレス一眼', id: 2084305443, note: '出品画面ではメーカー別の子カテゴリを選ぶ' },
+    'デジタル一眼レフ': { name: 'デジタルカメラ > デジタル一眼', id: 2084261634, note: '出品画面ではメーカー別の子カテゴリを選ぶ' },
+    'コンパクトデジカメ': { name: 'デジタルカメラ > コンパクトデジタルカメラ', id: 2084261642, note: '出品画面ではメーカー別の子カテゴリを選ぶ' },
+    'フィルム一眼レフ': { name: 'フィルムカメラ', id: 23640, note: '出品画面ではメーカー別の子カテゴリを選ぶ' },
+    'レンジファインダー': { name: 'フィルムカメラ', id: 23640, note: '出品画面ではメーカー別の子カテゴリ（ライカ等）を選ぶ' },
+    '中判・大判': { name: 'フィルムカメラ', id: 23640, note: '出品画面ではメーカー別または中判・大判の子カテゴリを選ぶ' },
+    '交換レンズ': { name: 'レンズ > 一眼カメラ用（AF／MF）> メーカー別', id: 23684, note: 'AF/MF → メーカー別の子カテゴリを選ぶ' },
+    'ストロボ': { name: 'アクセサリー > ストロボ、照明 > 対応メーカー別', id: 23744, note: '純正は対応メーカー用、Godox等は汎用外部ストロボ' },
+    'アクセサリー・その他': { name: 'カメラ、光学機器（親カテゴリ）', id: 23636, note: 'アクセサリー配下の小カテゴリ（ケース・フィルター・三脚など）を出品画面で選ぶ' },
   };
   const LENS_AF_CATEGORY = { 'canon': 2084261683, 'nikon': 2084261684, 'pentax': 2084261685, 'olympus': 2084261687 };
+  KINDS.filter(k => !CATEGORY[k]).forEach(k => console.warn('CATEGORY 未定義の種別:', k));
   const KIND_NOTES = {
     'ストロボ': '無線（電波）機能付きは技適マークを確認。並行輸入で技適のない個体は出品しない（規約上の禁止物にあたる可能性）。',
     '交換レンズ': 'マウント名は必ずタイトルへ（レンズカテゴリはマウント別ではない）。前玉・後玉を光にかざした写真を前のほうに。',
@@ -406,20 +425,18 @@
   };
   const WEEKDAYS = ['日曜', '月曜', '火曜', '水曜', '木曜', '金曜', '土曜'];
   const STORAGE_KEY = 'saya-yafuoku-helper-v1';
-
-  const KINDS = ['ミラーレス一眼', 'デジタル一眼レフ', 'コンパクトデジカメ', 'フィルム一眼レフ', 'レンジファインダー', '中判・大判', '交換レンズ', 'ストロボ', 'アクセサリー・その他'];
-  const BODY_KINDS = new Set(['ミラーレス一眼', 'デジタル一眼レフ', 'コンパクトデジカメ']);
-  const FILM_KINDS = new Set(['フィルム一眼レフ', 'レンジファインダー', '中判・大判']);
   const MAKERS = ['Canon', 'Nikon', 'SONY', 'FUJIFILM', 'OLYMPUS', 'OM SYSTEM', 'Panasonic', 'PENTAX', 'RICOH', 'Leica', 'SIGMA', 'TAMRON', 'TOKINA', 'Voigtlander', 'Carl Zeiss', 'Mamiya', 'Hasselblad', 'Minolta', 'CONTAX', 'Rollei', 'KONICA', 'Godox', 'Nissin', 'Manfrotto'];
   const MOUNTS = ['RFマウント', 'EFマウント', 'EF-Mマウント', 'Zマウント', 'Fマウント', 'Eマウント', 'Aマウント', 'Xマウント', 'Gマウント', 'マイクロフォーサーズ', 'フォーサーズ', 'Lマウント', 'ライカMマウント', 'ライカLスクリュー', 'Kマウント', 'M42', 'ハッセルブラッドV'];
+  // 専門店の等級（マップカメラ／キタムラの定義に対応）→ ヤフオク「商品の状態」
   const GRADES = [
-    { id: '新品', tag: '新品', cond: '未使用', def: '未開封・未使用の新品です。' },
-    { id: '未使用品', tag: '未使用', cond: '未使用', def: '開封済みですが未使用です。' },
-    { id: '美品', tag: '美品', cond: '目立った傷や汚れなし', def: '使用感がほとんどなく、外観・光学ともに良好です。' },
-    { id: '良品', tag: '良品', cond: '目立った傷や汚れなし', def: '通常使用にともなう小スレはありますが、動作良好で実用に問題ありません。' },
-    { id: '並品', tag: '並品', cond: 'やや傷や汚れあり', def: '使用感・スレ・小キズがあります。動作は確認済みです。' },
-    { id: '難あり', tag: '難あり', cond: '傷や汚れあり', def: '一部に不具合または目立つダメージがあります。内容は下記のとおりです。' },
-    { id: 'ジャンク', tag: 'ジャンク', cond: '全体的に状態が悪い', def: '動作保証のないジャンク品です。部品取り・修理前提でご入札ください。' },
+    { id: '新品', tag: '新品', cond: '未使用', used: false, def: '未開封・未使用の新品です。' },
+    { id: '未使用品', tag: '未使用', cond: '未使用', used: false, def: '開封済みですが未使用です。' },
+    { id: '新同品', tag: '新同品', cond: '未使用に近い', used: true, def: '使用した形跡がほとんどなく、新品同様の状態です。' },
+    { id: '美品', tag: '美品', cond: '目立った傷や汚れなし', used: true, def: '使用した形跡が少なく、外観の綺麗な状態です。光学・動作も良好です。' },
+    { id: '良品', tag: '良品', cond: '目立った傷や汚れなし', used: true, def: '通常使用にともなう小スレはありますが、動作良好で実用に問題ありません。' },
+    { id: '並品', tag: '並品', cond: 'やや傷や汚れあり', used: true, def: '使用感・スレ・小キズがあります。動作は確認済みです。' },
+    { id: '難あり', tag: '難あり', cond: '傷や汚れあり', used: true, def: '一部に不具合または目立つダメージがあります。内容は下記のとおりです。' },
+    { id: 'ジャンク', tag: 'ジャンク', cond: '全体的に状態が悪い', used: true, def: '動作保証のないジャンク品です。部品取り・修理前提でご入札ください。' },
   ];
   const CONDITIONS = ['未使用', '未使用に近い', '目立った傷や汚れなし', 'やや傷や汚れあり', '傷や汚れあり', '全体的に状態が悪い'];
   const STATUSES = ['未出品', '出品中', '落札', '発送済'];
@@ -431,44 +448,64 @@
   const SHIP_FEE = ['出品者負担（送料無料）', '落札者負担'];
   const RETURNS = ['記載と相違があれば返品可（到着後3日以内）', '返品不可（現状渡し）'];
   const RETURN_TEXT = {
-    '記載と相違があれば返品可（到着後3日以内）': '記載内容と明らかに相違がある場合は、到着後3日以内に取引ナビからご連絡ください（受取連絡を押す前にお願いします）。中古品特有の使用感・経年劣化を理由とした返品はお受けできません。',
-    '返品不可（現状渡し）': '現状渡しのため返品はお受けできません。ご不明点は入札前にご質問ください。',
+    '記載と相違があれば返品可（到着後3日以内）': { base: '記載内容と明らかに相違がある場合は、到着後3日以内に取引ナビからご連絡ください（受取連絡を押す前にお願いします）。', usedNote: '中古品特有の使用感・経年劣化を理由とした返品はお受けできません。' },
+    '返品不可（現状渡し）': { base: '現状渡しのため返品はお受けできません。ご不明点は入札前にご質問ください。', usedNote: '' },
   };
   const DAYS = ['1〜2日で発送', '2〜3日で発送', '3〜7日で発送'];
   const END_HOURS = Array.from({ length: 24 }, (_, h) => h + '時');
+  const OLD_FOOTER = '・中古品です。写真と説明文をよくご確認のうえご入札ください。\n・記載のない付属品はありません。\n・店舗閉店にともなう在庫整理のため、同時に複数出品しています。まとめて取引（同梱）にも対応します。\n・ご不明点は入札前に質問欄からお願いします。';
   const DEFAULT_SETTINGS = {
     shop: 'SAYA', kobutsu: '', from: '', days: DAYS[1], ship: SHIP_METHODS[0], shipfee: SHIP_FEE[0], ret: RETURNS[0], endday: '日曜', endhour: '22時', size: '60サイズ',
-    footer: '・中古品です。写真と説明文をよくご確認のうえご入札ください。\n・記載のない付属品はありません。\n・店舗閉店にともなう在庫整理のため、同時に複数出品しています。まとめて取引（同梱）にも対応します。\n・ご不明点は入札前に質問欄からお願いします。',
+    footer: '・写真と説明文をよくご確認のうえご入札ください。\n・記載のない付属品はありません。\n・店舗閉店にともなう在庫整理のため、同時に複数出品しています。まとめて取引（同梱）にも対応します。\n・ご不明点は入札前に質問欄からお願いします。',
   };
+  // 写真は各10枚（ヤフオクの上限）。ガイド 5-3〜5-5 と同じ順序
   const PHOTOS = {
-    body: ['正面（レンズなし、ボディキャップ外し）', '背面（液晶を点灯させる）', '上面（ダイヤル・シャッター周り）', '底面（シリアル・三脚穴）', '左側面（端子カバー開）', '右側面（グリップ）', 'マウント内部（センサー／ミラー）', 'ファインダー接眼部', 'シャッター回数の表示画面', 'メニュー画面（通電確認）', '傷・不具合箇所のアップ', '付属品を全部並べた集合写真', '元箱（型番ラベルが読める向き）'],
-    lens: ['前玉を光にかざす（カビ・クモリ確認）', '後玉を光にかざす', '正面（フィルター枠・型番刻印）', '側面（焦点距離・絞り表示）', 'マウント面（接点・爪）', '絞り羽根を絞り込んだ状態', '鏡筒を伸ばした状態（ズーム）', 'フード・キャップ装着', 'シリアル番号', '傷・不具合箇所のアップ', '付属品の集合写真', '元箱'],
-    film: ['正面', '背面', '裏蓋を開けた内部（圧板・モルト）', 'シャッター幕（レンズ外して）', 'ファインダー接眼部', '上面（巻き上げ・シャッターダイヤル）', '底面（シリアル・電池室）', '露出計の針／LED表示', '傷・不具合箇所のアップ', '付属品の集合写真', '元箱・ケース'],
-    other: ['全体（正面）', '全体（背面）', '端子・接点・ホットシュー', '電池室（液漏れ跡の有無）', '発光・動作中の写真', '刻印・型番・シリアル', '傷・不具合箇所のアップ', '付属品の集合写真', '元箱'],
+    body: ['正面（レンズなし、ボディキャップ外し）', '背面（液晶を点灯させる）', '上面（ダイヤル・シャッター周り）', '底面（シリアル・三脚穴）', '側面（端子カバー開・グリップ）', 'マウント内部（センサー／ミラー）', 'ファインダー接眼部', 'シャッター回数の表示画面（通電確認を兼ねる）', '傷・不具合箇所のアップ', '付属品の集合写真（元箱は型番ラベルが読める向きで一緒に）'],
+    lens: ['前玉を光にかざす（カビ・クモリ確認）', '後玉を光にかざす', '正面（フィルター枠・型番刻印）', '側面（焦点距離・絞り表示・シリアル）', 'マウント面（接点・爪）', '絞り羽根を絞り込んだ状態', '鏡筒を伸ばした状態（ズーム）／ヘリコイド', 'フード・キャップ装着', '傷・不具合箇所のアップ', '付属品の集合写真（元箱も一緒に）'],
+    film: ['正面', '背面', '上面（巻き上げ・シャッターダイヤル）', '底面（シリアル・電池室）', '裏蓋を開けた内部（圧板・モルト）', 'シャッター幕（レンズを外して）', 'ファインダー接眼部', '露出計の針／LED表示', '傷・不具合箇所のアップ', '付属品の集合写真（元箱・ケースも一緒に）'],
+    other: ['全体（正面）', '全体（背面）', '端子・接点・ホットシュー', '電池室（液漏れ跡の有無）', '発光・動作中の写真', '刻印・型番・シリアル', '傷・不具合箇所のアップ', '付属品の集合写真（元箱も一緒に）'],
   };
   const SAMPLES = [
     { kind: '交換レンズ', maker: 'Canon', model: 'RF24-70mm F2.8 L IS USM', mount: 'RFマウント', spec: '24-70mm F2.8', serial: '写真参照', grade: '美品', condition: '目立った傷や汚れなし', shutter: '', exterior: ['スレほぼなし'], exteriorNote: '', optics: ['カビなし', 'クモリなし', 'キズなし', 'チリ混入わずか'], opticsNote: '', func: ['各部動作確認済', 'AF動作OK', '絞り動作OK', '手ブレ補正OK'], funcNote: '', acc: ['元箱', 'レンズキャップ（前）', 'レンズキャップ（後）', 'レンズフード', 'ケース・ポーチ'], accOther: '', start: 1, bin: 198000, floor: 150000, notes: '2023年購入の店頭展示機です。', status: '未出品', sku: 'L-001', sample: true },
-    { kind: 'ミラーレス一眼', maker: 'SONY', model: 'α7 IV ボディ', alias: 'ILCE-7M4', mount: 'Eマウント', spec: '', serial: '', grade: '良品', condition: '目立った傷や汚れなし', shutter: '約18,000', exterior: ['小スレあり', 'グリップべたつきなし', '液晶保護フィルム貼付'], exteriorNote: '', optics: ['ファインダー内クリア', 'センサーにゴミあり'], opticsNote: 'センサーのゴミは F16 以上で軽微に写り込むレベル。', func: ['各部動作確認済', 'AF動作OK', 'シャッター全速OK', '液晶・EVF表示OK'], funcNote: '', acc: ['元箱', 'バッテリー', '充電器', 'ストラップ', 'ボディキャップ'], accOther: 'USBケーブル', start: 1, bin: null, floor: 170000, notes: '', status: '未出品', sku: 'B-014', sample: true },
-    { kind: 'フィルム一眼レフ', maker: 'Nikon', model: 'FM2 ブラック ボディ', mount: 'Fマウント', spec: '', serial: '', grade: '難あり', condition: '傷や汚れあり', shutter: '', exterior: ['スレ・小キズあり', '塗装剥がれあり', 'モルト劣化あり'], exteriorNote: '', optics: ['ファインダー内クリア'], opticsNote: '', func: ['シャッター全速OK', '不具合あり（備考参照）'], funcNote: '露出計は反応しません（電池新品で確認）。', acc: ['ボディキャップ'], accOther: '', start: 1, bin: null, floor: 20000, notes: '露出計不動のため難ありとしています。シャッターは全速切れます。', status: '出品中', sku: 'F-003', sample: true },
+    { kind: 'ミラーレス一眼', maker: 'SONY', model: 'α7 IV ボディ', alias: 'ILCE-7M4', mount: 'Eマウント', spec: '', serial: '', grade: '良品', condition: '目立った傷や汚れなし', shutter: '約18,000', exterior: ['小スレあり', 'グリップべたつきなし', '液晶保護フィルム貼付'], exteriorNote: '', optics: ['ファインダー内クリア', 'センサーにゴミあり'], opticsNote: 'F16以上で軽微に写り込む程度', func: ['各部動作確認済', 'AF動作OK', 'シャッター全速OK', '液晶・EVF表示OK'], funcNote: '', acc: ['元箱', 'バッテリー', '充電器', 'ストラップ', 'ボディキャップ'], accOther: 'USBケーブル', start: 1, bin: null, floor: 170000, notes: '', status: '未出品', sku: 'B-014', sample: true },
+    { kind: 'フィルム一眼レフ', maker: 'Nikon', model: 'FM2 ブラック ボディ', mount: 'Fマウント', spec: '', serial: '', grade: '難あり', condition: '傷や汚れあり', shutter: '', exterior: ['スレ・小キズあり', '塗装剥がれあり', 'モルト劣化あり'], exteriorNote: '', optics: ['ファインダー内クリア'], opticsNote: '', func: ['シャッター全速OK', '不具合あり（備考参照）'], funcNote: '', acc: ['ボディキャップ'], accOther: '', start: 1, bin: null, floor: 20000, notes: '露出計は反応しません（電池新品で確認）。シャッターは全速切れますが精度は未確認です。', status: '出品中', sku: 'F-003', sample: true },
   ];
 
   // ===== ユーティリティ =====
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const yen = n => (n == null || n === '' || isNaN(n)) ? '' : '¥' + Number(n).toLocaleString('ja-JP');
+  const signedYen = n => n < 0 ? '−' + yen(-n) : yen(n);
+  const t = s => String(s == null ? '' : s).trim();
   const uid = () => 'i' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  const norm = s => String(s || '').toLowerCase().replace(/[\s　\-–]/g, '').replace(/ｆ/g, 'f');
   function titleLength(s) {
     const chars = Array.from(s.replace(/\r?\n/g, ''));
     if (TITLE_COUNT_MODE === 'chars') return chars.length;
     return chars.reduce((n, c) => n + (/[ -~｡-ﾟ]/.test(c) ? 0.5 : 1), 0);
   }
+  const ARRAY_FIELDS = ['exterior', 'optics', 'func', 'acc', 'photosDone'];
+  function blankItem() {
+    return { id: uid(), kind: KINDS[0], maker: '', model: '', alias: '', mount: '', spec: '', serial: '', missing: '', size: '', grade: '良品', condition: '目立った傷や汚れなし', shutter: '', exterior: [], exteriorNote: '', optics: [], opticsNote: '', func: [], funcNote: '', acc: [], accOther: '', start: 1, bin: null, floor: null, notes: '', status: '未出品', sku: '', titleOverride: null, descOverride: null, photosDone: [], sample: false, createdAt: Date.now() };
+  }
+  function normalizeItem(raw) {
+    const it = Object.assign(blankItem(), raw && typeof raw === 'object' ? raw : {});
+    for (const k of ARRAY_FIELDS) if (!Array.isArray(it[k])) it[k] = [];
+    if (!GRADES.some(g => g.id === it.grade)) it.grade = '良品';
+    if (!KINDS.includes(it.kind)) it.kind = KINDS[0];
+    if (!STATUSES.includes(it.status)) it.status = STATUSES[0];
+    return it;
+  }
   function loadState() {
-    try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) { const s = JSON.parse(raw); if (s && Array.isArray(s.items)) return s; } } catch (e) { /* storage unavailable */ }
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { const s = JSON.parse(raw); if (s && Array.isArray(s.items)) { s.items = s.items.filter(x => x && typeof x === 'object').map(normalizeItem); return s; } }
+    } catch (e) { /* storage unavailable */ }
     return null;
   }
-  function saveState() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ }
-  }
+  function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ } }
+  function saveDraft() { try { localStorage.setItem(STORAGE_KEY + ':draft', JSON.stringify({ draft, editingId })); } catch (e) { /* ignore */ } }
+  function loadDraft() { try { const raw = localStorage.getItem(STORAGE_KEY + ':draft'); if (raw) { const d = JSON.parse(raw); if (d && d.draft && typeof d.draft === 'object') return { draft: normalizeItem(d.draft), editingId: d.editingId || null }; } } catch (e) { /* ignore */ } return null; }
   function fill(sel, opts, value) {
     sel.innerHTML = opts.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
     if (value != null) sel.value = value;
@@ -480,11 +517,10 @@
       onChange(Array.from(container.querySelectorAll('button[aria-pressed="true"]')).map(x => x.textContent));
     }));
   }
-  function copyText(text, statusEl, okMsg) {
-    const done = () => { if (statusEl) { statusEl.textContent = okMsg || 'コピーしました'; setTimeout(() => { statusEl.textContent = ''; }, 2000); } };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
-    } else fallbackCopy(text, done);
+  function copyText(text, done) {
+    const ok = () => { if (done) done(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok).catch(() => fallbackCopy(text, ok));
+    else fallbackCopy(text, ok);
   }
   function fallbackCopy(text, done) {
     const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
@@ -492,93 +528,115 @@
     try { document.execCommand('copy'); done(); } catch (e) { /* user can select manually */ }
     document.body.removeChild(ta);
   }
+  function flashButton(b, label) { const orig = b.dataset.label || b.textContent; b.dataset.label = orig; b.textContent = label; setTimeout(() => { b.textContent = orig; }, 1500); }
+  function setStatus(el, msg, kind) { el.textContent = msg || ''; el.className = 'status' + (kind ? ' ' + kind : ''); }
 
   // ===== 生成ロジック =====
-  function blankItem() {
-    return { id: uid(), kind: KINDS[0], maker: '', model: '', alias: '', mount: '', spec: '', serial: '', missing: '', size: '', grade: '良品', condition: '目立った傷や汚れなし', shutter: '', exterior: [], exteriorNote: '', optics: [], opticsNote: '', func: [], funcNote: '', acc: [], accOther: '', start: 1, bin: null, floor: null, notes: '', status: '未出品', sku: '', titleOverride: null, descOverride: null, photosDone: [], sample: false, createdAt: Date.now() };
-  }
-  function gradeOf(item) { return GRADES.find(g => g.id === item.grade) || GRADES[3]; }
+  function gradeOf(item) { return GRADES.find(g => g.id === item.grade) || GRADES.find(g => g.id === '良品'); }
   function isLens(item) { return item.kind === '交換レンズ'; }
   function photoKey(item) { if (isLens(item)) return 'lens'; if (BODY_KINDS.has(item.kind)) return 'body'; if (FILM_KINDS.has(item.kind)) return 'film'; return 'other'; }
-  const norm = s => String(s || '').toLowerCase().replace(/[\s\u3000\-–]/g, '').replace(/ｆ/g, 'f');
-  function specInModel(item) { const sp = norm(item.spec); if (!sp) return true; const m = norm(item.model); if (m.includes(sp)) return true; const mm = sp.match(/(\d+(?:\d+)?)mm/); return !!(mm && m.includes(mm[1] + 'mm')); }
   function categoryOf(item) {
     const base = CATEGORY[item.kind] || CATEGORY['アクセサリー・その他'];
-    if (isLens(item)) { const k = Object.keys(LENS_AF_CATEGORY).find(x => (item.maker || '').toLowerCase().includes(x)); if (k) return { name: 'レンズ > 一眼カメラ用（オートフォーカス）> ' + item.maker, id: LENS_AF_CATEGORY[k], note: 'MFレンズなら「マニュアルフォーカス」側のメーカー別へ' }; }
+    if (isLens(item)) { const k = Object.keys(LENS_AF_CATEGORY).find(x => (item.maker || '').toLowerCase().includes(x)); if (k) return { name: 'レンズ > 一眼カメラ用（オートフォーカス）> ' + t(item.maker), id: LENS_AF_CATEGORY[k], note: 'MFレンズなら「マニュアルフォーカス」側のメーカー別へ' }; }
     return base;
   }
-  function shortMount(m) { return (m || '').replace(/マウント$/, '').replace(/^ライカ/, 'ライカ'); }
+  function specInModel(item) { const sp = norm(item.spec); if (!sp) return true; const m = norm(item.model); if (m.includes(sp)) return true; const mm = sp.match(/(\d+(?:\d+)?)mm/); return !!(mm && m.includes(mm[1] + 'mm')); }
+  function modelSansMaker(item) {
+    const mk = t(item.maker), md = t(item.model);
+    if (mk && md.toLowerCase().startsWith(mk.toLowerCase()) && (md.length === mk.length || /[\s　]/.test(md[mk.length]))) return md.slice(mk.length).trim();
+    return md;
+  }
+  function mountInModel(item, alias) { // 「RF24-70mm」「EF 50mm」「NIKKOR Z 24-70」のように型番がマウント略称を含むときは重複させない（1文字略称は F値等に誤一致するので常に付ける）
+    const src = item.model + ' ' + (alias || '');
+    if (norm(src).includes(norm(item.mount))) return true;
+    const abbr = t(item.mount).replace(/マウント$/, '');
+    if (abbr.length < 2 || !/^[a-z0-9\-]+$/i.test(abbr)) return false;
+    return new RegExp('(^|[^a-z0-9])' + abbr.replace(/[-]/g, '\\-') + '(?=[^a-z]|$)', 'i').test(src);
+  }
+  function fullName(item) { return [t(item.maker), modelSansMaker(item)].filter(Boolean).join(' '); }
   function genTitle(item) {
     const g = gradeOf(item);
-    const parts = [];
-    if (item.maker) parts.push(item.maker.trim());
-    if (item.model) parts.push(item.model.trim());
-    const aliasOk = item.alias && !norm(item.model).includes(norm(item.alias));
-    if (aliasOk) parts.push(item.alias.trim());
-    if (isLens(item) && item.spec && !specInModel(item)) parts.push(item.spec.trim());
-    if (isLens(item) && item.mount && !item.model.toLowerCase().includes(shortMount(item.mount).toLowerCase())) parts.push(shortMount(item.mount) + '用');
-    parts.push(g.tag);
+    const base = [];
+    if (t(item.maker)) base.push(t(item.maker));
+    const md = modelSansMaker(item); if (md) base.push(md);
+    const alias = t(item.alias);
+    const aliasOk = alias && !norm(item.model).includes(norm(alias));
+    const tail = [];
+    if (isLens(item) && t(item.spec) && !specInModel(item)) tail.push(t(item.spec));
+    if (isLens(item) && t(item.mount) && !mountInModel(item, alias)) tail.push(t(item.mount)); // マウント名は検索語なので、型番に無ければ必ず入れる
+    tail.push(g.tag);
     const extras = [];
-    if (item.func.includes('各部動作確認済') && g.id !== 'ジャンク') extras.push('動作確認済');
-    if (item.shutter && BODY_KINDS.has(item.kind)) extras.push('ショット数' + item.shutter.replace(/^約/, '約').replace(/回$/, ''));
+    if (isLens(item) && item.optics.includes('カビなし') && item.optics.includes('クモリなし')) extras.push('カビクモリなし');
     if (item.acc.includes('元箱')) extras.push('元箱付');
-    if (item.optics.includes('カビなし') && item.optics.includes('クモリなし') && isLens(item)) extras.push('カビクモリなし');
-    let title = parts.concat(extras).join(' ');
-    // 上限を超える場合は後ろの「おまけ語」から落とす
-    while (titleLength(title) > TITLE_MAX && extras.length) { extras.pop(); title = parts.concat(extras).join(' '); }
-    if (titleLength(title) > TITLE_MAX && aliasOk) { parts.splice(parts.indexOf(item.alias.trim()), 1); title = parts.join(' '); }
-    return title;
+    if (t(item.shutter) && BODY_KINDS.has(item.kind)) extras.push('ショット数' + t(item.shutter).replace(/回$/, ''));
+    if (item.func.includes('各部動作確認済') && g.id !== 'ジャンク') extras.push('動作確認済');
+    const build = (withAlias, n) => base.concat(withAlias ? [alias] : []).concat(tail).concat(extras.slice(0, n)).join(' ');
+    // 65文字に収まる最長の候補: まず別表記つきで末尾の語から落とし、収まらなければ別表記なしで再計算
+    for (const withAlias of (aliasOk ? [true, false] : [false])) {
+      for (let n = extras.length; n >= 0; n--) { const s = build(withAlias, n); if (titleLength(s) <= TITLE_MAX) return s; }
+    }
+    return build(false, 0);
   }
-  function list(arr, note) { const a = arr.slice(); if (note) a.push(note.trim()); return a.length ? a.join('、') : ''; }
+  function list(arr, note) { const a = arr.join('、'); const n = t(note); return a && n ? a + '　※' + n : (a || n); }
+  function retOf(item, settings) { return gradeOf(item).id === 'ジャンク' ? RETURNS[1] : (RETURN_TEXT[settings.ret] ? settings.ret : RETURNS[0]); }
   function genDesc(item, settings) {
     const g = gradeOf(item);
     const L = [];
-    const name = [item.maker, item.model].filter(Boolean).join(' ');
-    L.push('【商品名】' + name + (isLens(item) && item.spec && !specInModel(item) ? '　' + item.spec : '') + (item.alias ? '（別表記: ' + item.alias.trim() + '）' : ''));
-    if (item.mount) L.push('【マウント】' + item.mount);
+    const alias = t(item.alias);
+    L.push('【商品名】' + fullName(item) + (isLens(item) && t(item.spec) && !specInModel(item) ? '　' + t(item.spec) : '') + (alias ? '（別表記: ' + alias + '）' : ''));
+    if (t(item.mount)) L.push('【マウント】' + t(item.mount));
     L.push('【コンディション】' + g.id + '　' + g.def);
-    if (item.shutter) L.push('【シャッター回数】' + item.shutter + (/回/.test(item.shutter) ? '' : '回') + '（当店調べ）');
+    if (t(item.shutter)) L.push('【シャッター回数】' + t(item.shutter) + (/回/.test(item.shutter) ? '' : '回') + '（当店調べ）');
     const ext = list(item.exterior, item.exteriorNote); if (ext) L.push('【外観】' + ext);
     const opt = list(item.optics, item.opticsNote); if (opt) L.push((isLens(item) ? '【光学】' : '【光学・ファインダー】') + opt);
     const fn = list(item.func, item.funcNote); if (fn) L.push('【動作】' + fn);
-    const acc = item.acc.slice(); if (item.accOther) acc.push(...item.accOther.split(/[、,，]/).map(s => s.trim()).filter(Boolean));
-    L.push('【付属品】' + (acc.length ? acc.join('、') : '本体のみ（写真に写っているものがすべてです）') + (item.missing ? '　／　欠品: ' + item.missing.trim() : ''));
-    if (item.serial) L.push('【シリアル】' + item.serial);
-    if (item.notes) L.push('【備考】' + item.notes.trim());
+    const acc = item.acc.slice(); if (t(item.accOther)) acc.push(...t(item.accOther).split(/[、,，]/).map(x => x.trim()).filter(Boolean));
+    L.push('【付属品】' + (acc.length ? acc.join('、') : '本体のみ（写真に写っているものがすべてです）') + (t(item.missing) ? '　／　欠品: ' + t(item.missing) : ''));
+    if (t(item.serial)) L.push('【シリアル】' + t(item.serial));
+    if (t(item.notes)) L.push('【備考】' + t(item.notes));
     if (g.id === 'ジャンク') L.push('【ジャンク品について】動作・精度の保証はありません。記載以外の不具合がある可能性もあります。現状渡し・返品不可でご了承のうえご入札ください。');
     else if (g.id === '難あり') L.push('【難ありについて】上記の不具合を了承いただける方のみご入札ください。記載の不具合を理由とした返品はお受けできません。');
     const seller = [];
-    if (settings.shop) seller.push(settings.shop + 'の店舗閉店にともなう在庫処分品です。店頭で検品のうえ出品しています。');
-    else seller.push('店舗閉店にともなう在庫処分品です。店頭で検品のうえ出品しています。');
-    if (settings.kobutsu) seller.push('古物商許可番号: ' + settings.kobutsu);
+    const shop = t(settings.shop);
+    seller.push((shop ? shop + 'の' : '') + '店舗閉店にともなう在庫処分品です。' + (g.id === '新品' ? '未開封のまま出品しています。' : '店頭で検品のうえ出品しています。'));
+    if (t(settings.kobutsu)) seller.push('古物商許可番号: ' + t(settings.kobutsu));
     L.push('【出品者について】' + seller.join('　'));
     const ship = [];
     if (settings.ship) ship.push(settings.ship + (settings.ship.startsWith('おてがる') ? '（匿名配送・補償付き）' : ''));
     if (settings.shipfee) ship.push('送料' + (settings.shipfee.startsWith('出品者') ? '無料' : '落札者負担'));
-    if (settings.from) ship.push('発送元 ' + settings.from);
+    if (t(settings.from)) ship.push('発送元 ' + t(settings.from));
     if (settings.days) ship.push('入金確認後' + settings.days);
     L.push('【発送】' + ship.join('　'));
-    L.push('【返品】' + (g.id === 'ジャンク' ? 'ジャンク品のため返品はお受けできません。' : (RETURN_TEXT[settings.ret] || settings.ret)));
-    if (settings.footer) L.push('', settings.footer.trim());
-    if (settings.shop) L.push('', settings.shop);
+    const ret = RETURN_TEXT[retOf(item, settings)];
+    L.push('【返品】' + (g.id === 'ジャンク' ? 'ジャンク品のため返品はお受けできません。' : ret.base + (g.used ? ret.usedNote : '')));
+    const foot = [];
+    foot.push(g.used ? '・中古品です。' : (g.id === '新品' ? '・新品・未開封です。' : '・未使用品です。'));
+    if (t(settings.footer)) foot.push(t(settings.footer));
+    L.push('', foot.join('\n'));
+    if (shop) L.push('', shop);
     return L.join('\n');
   }
   function shipCostOf(item, settings) { const sz = item.size || settings.size || '60サイズ'; return settings.shipfee && settings.shipfee.startsWith('落札者') ? 0 : (SHIP_COST[sz] || 0); }
   function payout(price, item, settings) { if (price == null || isNaN(price) || price <= 0) return null; const fee = Math.floor(price * FEE_RATE); const ship = shipCostOf(item, settings); return { price, fee, ship, net: price - fee - ship, storeNet: price - Math.floor(price * STORE_FEE_RATE) - ship }; }
   function titleOf(item) { return item.titleOverride != null ? item.titleOverride : genTitle(item); }
   function descOf(item) { return item.descOverride != null ? item.descOverride : genDesc(item, state.settings); }
-  function searchQuery(item) { return [item.maker, item.model].filter(Boolean).join(' ').trim(); }
+  function searchQuery(item) { return fullName(item); }
 
   // ===== 状態 =====
-  let state = loadState() || { items: SAMPLES.map(s => Object.assign(blankItem(), s, { id: uid() })), settings: Object.assign({}, DEFAULT_SETTINGS), seeded: true };
+  let state = loadState() || { items: SAMPLES.map(s => normalizeItem(Object.assign({}, s, { id: uid() }))), settings: Object.assign({}, DEFAULT_SETTINGS), seeded: true };
   state.settings = Object.assign({}, DEFAULT_SETTINGS, state.settings || {});
+  if (state.settings.footer === OLD_FOOTER) state.settings.footer = DEFAULT_SETTINGS.footer; // 旧既定値（「中古品です」行つき）からの移行
+  if (typeof state.settings.ret === 'string' && !RETURN_TEXT[state.settings.ret]) state.settings.ret = RETURNS[0];
   let draft = blankItem();
   let editingId = null;
-  let pendingDelete = null;
+  let pendingAction = null; // { type: 'delete'|'clear-all'|'replace', ... }
+  let armedNew = 0;
+  const saved = loadDraft();
+  if (saved) { draft = saved.draft; editingId = saved.editingId && state.items.some(x => x.id === saved.editingId) ? saved.editingId : null; }
 
   // ===== フォーム =====
   const F = {
-    kind: $('f-kind'), maker: $('f-maker'), model: $('f-model'), alias: $('f-alias'), mount: $('f-mount'), missing: $('f-missing'), size: $('f-size'), spec: $('f-spec'), serial: $('f-serial'),
+    kind: $('f-kind'), maker: $('f-maker'), model: $('f-model'), alias: $('f-alias'), mount: $('f-mount'), spec: $('f-spec'), serial: $('f-serial'), missing: $('f-missing'), size: $('f-size'),
     grade: $('f-grade'), condition: $('f-condition'), shutter: $('f-shutter'), exterior: $('f-exterior'), optics: $('f-optics'), func: $('f-function'),
     accOther: $('f-acc-other'), start: $('f-start'), bin: $('f-bin'), floor: $('f-floor'), notes: $('f-notes'), status: $('f-status'), sku: $('f-sku'),
   };
@@ -588,30 +646,36 @@
   $('mounts').innerHTML = MOUNTS.map(m => `<option value="${esc(m)}">`).join('');
   $('checks-acc').innerHTML = ACCESSORIES.map((a, i) => `<label><input type="checkbox" id="acc-${i}" value="${esc(a)}">${esc(a)}</label>`).join('');
 
-  function renderForm() {
-    F.kind.value = draft.kind; F.maker.value = draft.maker; F.model.value = draft.model; F.alias.value = draft.alias || ''; F.mount.value = draft.mount; F.missing.value = draft.missing || ''; F.size.value = draft.size || ''; F.spec.value = draft.spec; F.serial.value = draft.serial;
+  function syncEditUI(hint) {
+    const editing = !!editingId;
+    $('editing-hint').textContent = hint || (editing ? '編集中: ' + (draft.sku || draft.model || '') : '新規');
+    $('btn-save').textContent = editing ? 'この品を上書き保存' : '在庫リストに追加';
+  }
+  function renderForm(hint) {
+    F.kind.value = draft.kind; F.maker.value = draft.maker; F.model.value = draft.model; F.alias.value = draft.alias || ''; F.mount.value = draft.mount; F.spec.value = draft.spec; F.serial.value = draft.serial; F.missing.value = draft.missing || ''; F.size.value = draft.size || '';
     F.grade.value = draft.grade; F.condition.value = draft.condition; F.shutter.value = draft.shutter;
     F.exterior.value = draft.exteriorNote; F.optics.value = draft.opticsNote; F.func.value = draft.funcNote; F.accOther.value = draft.accOther;
     F.start.value = draft.start == null ? '' : draft.start; F.bin.value = draft.bin == null ? '' : draft.bin; F.floor.value = draft.floor == null ? '' : draft.floor;
     F.notes.value = draft.notes; F.status.value = draft.status; F.sku.value = draft.sku;
-    chips($('chips-exterior'), EXTERIOR_CHIPS, draft.exterior, v => { draft.exterior = v; renderOutputs(); });
-    chips($('chips-optics'), OPTICS_CHIPS, draft.optics, v => { draft.optics = v; renderOutputs(); });
-    chips($('chips-function'), FUNCTION_CHIPS, draft.func, v => { draft.func = v; renderOutputs(); });
+    chips($('chips-exterior'), EXTERIOR_CHIPS, draft.exterior, v => { draft.exterior = v; renderOutputs(); saveDraft(); });
+    chips($('chips-optics'), OPTICS_CHIPS, draft.optics, v => { draft.optics = v; renderOutputs(); saveDraft(); });
+    chips($('chips-function'), FUNCTION_CHIPS, draft.func, v => { draft.func = v; renderOutputs(); saveDraft(); });
     document.querySelectorAll('#checks-acc input').forEach(cb => { cb.checked = draft.acc.includes(cb.value); });
-    $('editing-hint').textContent = editingId ? '編集中: ' + (draft.sku || draft.model || '') : '新規';
+    syncEditUI(hint);
     renderOutputs();
   }
   function readForm() {
-    draft.kind = F.kind.value; draft.maker = F.maker.value; draft.model = F.model.value; draft.alias = F.alias.value; draft.mount = F.mount.value; draft.missing = F.missing.value; draft.size = F.size.value; draft.spec = F.spec.value; draft.serial = F.serial.value;
-    draft.grade = F.grade.value; draft.condition = F.condition.value; draft.shutter = F.shutter.value.trim();
+    draft.kind = F.kind.value; draft.maker = F.maker.value; draft.model = F.model.value; draft.alias = F.alias.value; draft.mount = F.mount.value; draft.spec = F.spec.value; draft.serial = F.serial.value; draft.missing = F.missing.value; draft.size = F.size.value;
+    draft.grade = F.grade.value; draft.condition = F.condition.value; draft.shutter = F.shutter.value;
     draft.exteriorNote = F.exterior.value; draft.opticsNote = F.optics.value; draft.funcNote = F.func.value; draft.accOther = F.accOther.value;
     draft.start = F.start.value === '' ? null : Number(F.start.value); draft.bin = F.bin.value === '' ? null : Number(F.bin.value); draft.floor = F.floor.value === '' ? null : Number(F.floor.value);
-    draft.notes = F.notes.value; draft.status = F.status.value; draft.sku = F.sku.value.trim();
+    draft.notes = F.notes.value; draft.status = F.status.value; draft.sku = F.sku.value;
+    for (const k of ['maker', 'model', 'alias', 'mount', 'spec', 'serial', 'missing', 'shutter', 'exteriorNote', 'opticsNote', 'funcNote', 'accOther', 'notes', 'sku']) draft[k] = t(draft[k]);
     draft.acc = Array.from(document.querySelectorAll('#checks-acc input:checked')).map(cb => cb.value);
   }
   F.grade.addEventListener('change', () => { const g = GRADES.find(x => x.id === F.grade.value); if (g) F.condition.value = g.cond; });
-  $('item-form').addEventListener('input', () => { readForm(); renderOutputs(); });
-  $('item-form').addEventListener('change', () => { readForm(); renderOutputs(); });
+  $('item-form').addEventListener('input', () => { readForm(); renderOutputs(); saveDraft(); });
+  $('item-form').addEventListener('change', () => { readForm(); renderOutputs(); saveDraft(); });
 
   // ===== 出力 =====
   const O = { title: $('o-title'), desc: $('o-desc') };
@@ -624,10 +688,10 @@
     updateCounters();
     $('kind-note').textContent = KIND_NOTES[draft.kind] || '';
     const st = state.settings; const cat = categoryOf(draft);
-    const pb = payout(draft.bin, draft, st), pf = payout(draft.floor, draft, st), ps = payout(draft.start, draft, st);
+    const pb = payout(draft.bin, draft, st), pf = payout(draft.floor, draft, st), ps = (draft.start != null && draft.start > 1) ? payout(draft.start, draft, st) : null;
     $('fee-rate').textContent = '手数料 ' + Math.round(FEE_RATE * 100) + '%・送料 ' + (shipCostOf(draft, st) ? yen(shipCostOf(draft, st)) + '（' + (draft.size || st.size) + '）' : '落札者負担');
-    const fmt = (label, p) => p ? `<div><strong>${label} ${yen(p.price)}</strong> → 手数料 ${yen(p.fee)}・送料 ${yen(p.ship)} → <strong>手取り ${yen(p.net)}</strong><span class="sub" style="color:var(--muted)">（ストア7.7%なら ${yen(p.storeNet)}）</span></div>` : '';
-    $('payout').innerHTML = [fmt('即決', pb), fmt('下限', pf), (!pb && !pf) ? fmt('開始価格', ps) : ''].join('') || '即決価格か下限メモを入れると手取りが出ます。';
+    const fmt = (label, p) => p ? `<div><strong>${label} ${yen(p.price)}</strong> → 手数料 ${yen(p.fee)}・送料 ${yen(p.ship)} → <strong>手取り ${signedYen(p.net)}</strong><span style="color:var(--muted)">（ストア7.7%なら ${signedYen(p.storeNet)}）${p.net < 0 ? ' 送料が落札額を上回ります' : ''}</span></div>` : '';
+    $('payout').innerHTML = [fmt('即決', pb), fmt('下限', pf), (!pb && !pf) ? fmt('開始価格', ps) : ''].join('') || '即決価格か下限メモ、または1円以外の開始価格を入れると手取りが出ます。';
     $('form-memo').innerHTML = [
       ['カテゴリ', `${esc(cat.name)} <a href="https://auctions.yahoo.co.jp/category/list/${cat.id}/" target="_blank" rel="noopener">ID ${cat.id} ↗</a>${cat.note ? '（' + esc(cat.note) + '）' : ''}`],
       ['商品の状態', esc(draft.condition)],
@@ -635,8 +699,9 @@
       ['終了', esc(st.endday + ' ' + st.endhour) + '（複数出品は10〜30分ずらす）'],
       ['自動延長', 'あり'],
       ['送料負担 / 配送方法', esc(st.shipfee) + ' / ' + esc(st.ship)],
+      ['発送元', esc(st.from || '未設定（既定値タブで都道府県を入れる）')],
       ['発送までの日数', esc(st.days)],
-      ['返品', esc(st.ret)],
+      ['返品', esc(retOf(draft, st))],
     ].map(([k, v]) => `<div><span style="color:var(--muted)">${k}:</span> ${v}</div>`).join('');
     const q = searchQuery(draft);
     $('search-q').textContent = q;
@@ -647,51 +712,59 @@
       ['ヤフオク 出品中', 'https://auctions.yahoo.co.jp/search/search/' + enc + '/0/'],
       ['オークファン', 'https://aucfan.com/search1/q-' + enc + '/'],
       ['メルカリ 売り切れ', 'https://jp.mercari.com/search?keyword=' + enc + '&status=sold_out'],
-      ['マップカメラ 中古', 'https://www.mapcamera.com/search?keyword=' + enc + '&cat=used'],
-    ].map(([t, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} ↗</a>`).join('') : '<span class="note">メーカーと型番を入れると検索リンクが出ます。</span>';
+      ['マップカメラ 中古販売（上限の目安）', 'https://www.mapcamera.com/search?keyword=' + enc + '&cat=used'],
+      ['マップカメラ 買取見積（下限の目安・型番を入力）', 'https://www.mapcamera.com/ec/assessment/search'],
+    ].map(([tt, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(tt)} ↗</a>`).join('') : '<span class="note">メーカーと型番を入れると検索リンクが出ます。</span>';
     const key = photoKey(draft);
     const done = draft.photosDone || [];
-    $('photo-list').innerHTML = PHOTOS[key].map((p, i) => `<li><label><input type="checkbox" data-photo="${esc(p)}" ${done.includes(p) ? 'checked' : ''}><span>${esc(p)}</span></label></li>`).join('');
+    $('photo-list').innerHTML = PHOTOS[key].map(p => `<li><label><input type="checkbox" data-photo="${esc(p)}" ${done.includes(p) ? 'checked' : ''}><span>${esc(p)}</span></label></li>`).join('');
     $('photo-count').textContent = done.filter(p => PHOTOS[key].includes(p)).length + ' / ' + PHOTOS[key].length;
     $('title-note').textContent = draft.titleOverride != null ? '手動で編集中' : '';
+    $('desc-note').textContent = draft.descOverride != null ? '手動で編集中（チップの変更は反映されません）' : '';
   }
   function updateCounters() {
     const n = titleLength(O.title.value);
     const c = $('title-count'); c.textContent = (Number.isInteger(n) ? n : n.toFixed(1)) + ' / ' + TITLE_MAX; c.classList.toggle('over', n > TITLE_MAX);
     $('desc-count').textContent = Array.from(O.desc.value).length + ' 文字';
   }
-  O.title.addEventListener('input', () => { if (syncing) return; draft.titleOverride = O.title.value; updateCounters(); $('title-note').textContent = '手動で編集中'; });
-  O.desc.addEventListener('input', () => { if (syncing) return; draft.descOverride = O.desc.value; updateCounters(); });
-  $('btn-regen-title').addEventListener('click', () => { draft.titleOverride = null; renderOutputs(); });
-  $('btn-regen-desc').addEventListener('click', () => { draft.descOverride = null; renderOutputs(); });
-  $('btn-copy-both').addEventListener('click', () => copyText(O.title.value + '\n\n' + O.desc.value, $('form-status'), 'タイトルと説明をコピーしました'));
+  O.title.addEventListener('input', () => { if (syncing) return; draft.titleOverride = O.title.value; updateCounters(); $('title-note').textContent = '手動で編集中'; saveDraft(); });
+  O.desc.addEventListener('input', () => { if (syncing) return; draft.descOverride = O.desc.value; updateCounters(); $('desc-note').textContent = '手動で編集中（チップの変更は反映されません）'; saveDraft(); });
+  $('btn-regen-title').addEventListener('click', () => { draft.titleOverride = null; renderOutputs(); saveDraft(); });
+  $('btn-regen-desc').addEventListener('click', () => { draft.descOverride = null; renderOutputs(); saveDraft(); });
+  $('btn-copy-both').addEventListener('click', e => copyText(O.title.value + '\n\n' + O.desc.value, () => flashButton(e.currentTarget, 'コピー済')));
   $('photo-list').addEventListener('change', e => {
     const p = e.target.getAttribute('data-photo'); if (!p) return;
     const set = new Set(draft.photosDone || []); if (e.target.checked) set.add(p); else set.delete(p); draft.photosDone = Array.from(set);
     if (editingId) { const it = state.items.find(x => x.id === editingId); if (it) { it.photosDone = draft.photosDone; saveState(); } }
-    renderOutputs();
+    renderOutputs(); saveDraft();
   });
-  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => {
-    const el = $(b.getAttribute('data-copy'));
-    copyText(el.value, b.closest('.card, .actions') ? (b.parentElement.querySelector('.status') || $('form-status')) : $('form-status'));
-  }));
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => { const el = $(b.getAttribute('data-copy')); copyText(el.value, () => flashButton(b, 'コピー済')); }));
 
   // ===== 保存・複製・新規 =====
+  function isDirty() {
+    const base = editingId ? state.items.find(x => x.id === editingId) : null;
+    const cmp = o => { const c = Object.assign({}, o); delete c.id; delete c.createdAt; delete c.photosDone; return JSON.stringify(c); };
+    return base ? cmp(base) !== cmp(draft) : cmp(Object.assign(blankItem(), { kind: draft.kind })) !== cmp(draft);
+  }
   $('item-form').addEventListener('submit', e => {
     e.preventDefault(); readForm();
-    if (!draft.maker.trim() || !draft.model.trim()) { $('form-status').textContent = 'メーカーと型番は必須です'; $('form-status').style.color = 'var(--bad)'; return; }
-    $('form-status').style.color = '';
+    if (!draft.maker || !draft.model) { setStatus($('form-status'), 'メーカーと型番は必須です', 'bad'); return; }
     draft.sample = false;
     if (editingId) { const i = state.items.findIndex(x => x.id === editingId); if (i >= 0) state.items[i] = Object.assign({}, draft); else state.items.push(Object.assign({}, draft)); }
     else { editingId = draft.id; state.items.push(Object.assign({}, draft)); }
-    saveState(); renderList();
-    $('form-status').textContent = '保存しました（' + (draft.sku || draft.model) + '）'; $('editing-hint').textContent = '編集中: ' + (draft.sku || draft.model);
-    setTimeout(() => { $('form-status').textContent = ''; }, 2500);
+    saveState(); saveDraft(); renderList(); syncEditUI();
+    setStatus($('form-status'), '保存しました（' + (draft.sku || draft.model) + '）。続けて直すと同じ行を上書きします。次の品は「新規カード」から。');
   });
-  $('btn-new').addEventListener('click', () => { draft = blankItem(); editingId = null; renderForm(); F.maker.focus(); });
+  $('btn-new').addEventListener('click', () => {
+    readForm();
+    if (isDirty() && Date.now() - armedNew > 6000) { armedNew = Date.now(); setStatus($('form-status'), '未保存の内容があります。破棄して新規にするなら、もう一度「新規カード」を押してください', 'warn'); return; }
+    armedNew = 0; draft = blankItem(); editingId = null; renderForm(); saveDraft(); setStatus($('form-status'), ''); F.maker.focus();
+  });
   $('btn-dup').addEventListener('click', () => {
-    readForm(); const copy = Object.assign(blankItem(), JSON.parse(JSON.stringify(draft)), { id: uid(), serial: '', shutter: '', sku: '', status: '未出品', titleOverride: null, descOverride: null, photosDone: [], sample: false, createdAt: Date.now() });
-    draft = copy; editingId = null; renderForm(); $('form-status').textContent = '複製しました。シリアル・シャッター回数・管理番号を入れてください'; setTimeout(() => { $('form-status').textContent = ''; }, 3000);
+    readForm(); const from = draft.sku || draft.model || '';
+    draft = normalizeItem(Object.assign({}, JSON.parse(JSON.stringify(draft)), { id: uid(), serial: '', shutter: '', sku: '', status: '未出品', titleOverride: null, descOverride: null, photosDone: [], sample: false, createdAt: Date.now() }));
+    editingId = null; renderForm('複製（未保存）: 元 ' + from); saveDraft();
+    setStatus($('form-status'), '複製しました。シリアル・シャッター回数・管理番号を入力し、外観・光学・動作の補足、備考、欠品、その他付属品はこの個体に合わせて見直してください', 'warn');
   });
 
   // ===== 在庫リスト =====
@@ -707,10 +780,12 @@
     $('t-bin').textContent = yen(state.items.reduce((s, i) => s + (i.bin || 0), 0)) || '¥0';
     $('list-empty').hidden = rows.length > 0;
     $('btn-clear-samples').hidden = !state.items.some(i => i.sample);
+    $('btn-clear-all').hidden = state.items.length === 0;
+    $('backup-meta').textContent = '最終バックアップ: ' + (state.lastBackupAt ? new Date(state.lastBackupAt).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '未保存（「まとめて追加・書き出し」でJSONを保存）');
     $('list-body').innerHTML = rows.map(it => {
       const n = titleLength(titleOf(it)); const sIdx = STATUSES.indexOf(it.status);
-      return `<tr class="${it.sample ? 'sample' : ''} ${it.id === editingId ? 'active' : ''}" data-id="${it.id}">
-        <td><strong>${esc(it.maker)} ${esc(it.model)}</strong><span class="sub">${esc(it.sku || '')}${it.sku && it.mount ? ' ・ ' : ''}${esc(it.mount || '')}</span></td>
+      return `<tr class="${it.sample ? 'sample' : ''} ${it.id === editingId ? 'active' : ''}" data-id="${esc(it.id)}">
+        <td><strong>${esc(fullName(it))}</strong><span class="sub">${esc(it.sku || '')}${it.sku && it.mount ? ' ・ ' : ''}${esc(it.mount || '')}</span></td>
         <td>${esc(it.kind)}</td><td>${esc(it.grade)}</td>
         <td class="num">${yen(it.start)}</td><td class="num">${yen(it.bin)}</td>
         <td class="num"><span class="${n > TITLE_MAX ? 'counter over' : 'counter'}">${n}</span></td>
@@ -719,39 +794,92 @@
       </tr>`;
     }).join('');
   }
+  function askConfirm(action, text) { pendingAction = action; $('confirm-text').textContent = text; $('confirm-delete').hidden = false; }
   $('list-filter').addEventListener('input', renderList); $('list-status-filter').addEventListener('change', renderList);
   $('list-body').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return; const id = b.closest('tr').getAttribute('data-id'); const it = state.items.find(x => x.id === id); if (!it) return;
     const act = b.getAttribute('data-act');
-    if (act === 'edit') { draft = Object.assign(blankItem(), JSON.parse(JSON.stringify(it))); editingId = it.id; renderForm(); showTab('card'); }
-    if (act === 'copy') { copyText(titleOf(it) + '\n\n' + descOf(it), null); b.textContent = 'コピー済'; setTimeout(() => { b.textContent = 'タイトル＋説明'; }, 1500); }
-    if (act === 'del') { pendingDelete = it.id; $('confirm-text').textContent = '「' + it.maker + ' ' + it.model + '」を削除しますか？'; $('confirm-delete').hidden = false; }
+    if (act === 'edit') { draft = normalizeItem(JSON.parse(JSON.stringify(it))); editingId = it.id; renderForm(); saveDraft(); setStatus($('form-status'), ''); showTab('card'); }
+    if (act === 'copy') copyText(titleOf(it) + '\n\n' + descOf(it), () => flashButton(b, 'コピー済'));
+    if (act === 'del') askConfirm({ type: 'delete', id: it.id }, '「' + fullName(it) + '」を削除しますか？');
   });
   $('list-body').addEventListener('change', e => {
     const s = e.target.closest('select[data-act="status"]'); if (!s) return; const id = s.closest('tr').getAttribute('data-id'); const it = state.items.find(x => x.id === id); if (!it) return;
-    it.status = s.value; if (editingId === id) draft.status = s.value; saveState(); renderList(); if (editingId === id) F.status.value = s.value;
+    it.status = s.value; if (editingId === id) { draft.status = s.value; F.status.value = s.value; saveDraft(); } saveState(); renderList();
   });
-  $('btn-confirm-yes').addEventListener('click', () => { state.items = state.items.filter(x => x.id !== pendingDelete); if (editingId === pendingDelete) { editingId = null; draft = blankItem(); renderForm(); } pendingDelete = null; $('confirm-delete').hidden = true; saveState(); renderList(); });
-  $('btn-confirm-no').addEventListener('click', () => { pendingDelete = null; $('confirm-delete').hidden = true; });
-  $('btn-clear-samples').addEventListener('click', () => { state.items = state.items.filter(x => !x.sample); if (editingId && !state.items.some(x => x.id === editingId)) { editingId = null; draft = blankItem(); renderForm(); } saveState(); renderList(); });
+  function resetEditorIfGone() { if (editingId && !state.items.some(x => x.id === editingId)) { editingId = null; draft = blankItem(); renderForm(); saveDraft(); } }
+  $('btn-confirm-yes').addEventListener('click', () => {
+    const a = pendingAction; pendingAction = null; $('confirm-delete').hidden = true; if (!a) return;
+    if (a.type === 'delete') state.items = state.items.filter(x => x.id !== a.id);
+    if (a.type === 'clear-all') state.items = [];
+    if (a.type === 'replace') { state.items = a.items; if (a.settings) state.settings = Object.assign({}, DEFAULT_SETTINGS, a.settings); editingId = null; draft = blankItem(); renderForm(); renderSettings(); setStatus($('import-status'), a.items.length + ' 件に置き換えました'); $('import-in').value = ''; }
+    resetEditorIfGone(); saveState(); renderList(); renderOutputs();
+  });
+  $('btn-confirm-no').addEventListener('click', () => { pendingAction = null; $('confirm-delete').hidden = true; });
+  $('btn-clear-samples').addEventListener('click', () => { state.items = state.items.filter(x => !x.sample); state.seeded = false; resetEditorIfGone(); saveState(); renderList(); });
+  $('btn-clear-all').addEventListener('click', () => askConfirm({ type: 'clear-all' }, '在庫 ' + state.items.length + ' 件をすべて削除しますか？ 先に「バックアップ（JSON）」を保存してください。'));
 
   // ===== まとめて追加 =====
-  $('btn-bulk-add').addEventListener('click', () => {
-    const lines = $('bulk-in').value.split(/\r?\n/).map(l => l.trim()).filter(Boolean); let added = 0, skipped = 0;
-    for (const line of lines) {
-      const cells = line.split(/\t|,|，|、/).map(s => s.trim());
-      if (cells.length < 3) { skipped++; continue; }
-      let [kind, maker, model, grade, start, bin, sku] = cells;
-      if (!KINDS.includes(kind)) { const k = KINDS.find(x => x.includes(kind) || kind.includes(x)); if (k) kind = k; else { if (!maker || !model) { skipped++; continue; } kind = /レンズ|mm/i.test(model) ? '交換レンズ' : KINDS[0]; } }
-      if (!maker || !model) { skipped++; continue; }
-      const it = blankItem(); it.kind = kind; it.maker = maker; it.model = model;
-      if (grade && GRADES.some(g => g.id === grade)) { it.grade = grade; it.condition = gradeOf(it).cond; }
-      if (start !== undefined && start !== '' && !isNaN(start)) it.start = Number(start);
-      if (bin !== undefined && bin !== '' && !isNaN(bin)) it.bin = Number(bin);
-      if (sku) it.sku = sku;
-      state.items.push(it); added++;
+  function splitCells(line, sep) {
+    const isSep = ch => sep === '\t' ? ch === '\t' : sep === ',' ? (ch === ',' || ch === '，') : ch === '、';
+    const out = []; let cur = '', q = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (q) { if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+      else if (ch === '"' && cur.trim() === '') { q = true; cur = ''; }
+      else if (isSep(ch)) { out.push(cur); cur = ''; }
+      else cur += ch;
     }
-    saveState(); renderList(); $('bulk-status').textContent = added + ' 件追加' + (skipped ? '、' + skipped + ' 行はスキップ（列不足）' : ''); if (added) $('bulk-in').value = '';
+    out.push(cur);
+    return out.map(x => x.trim());
+  }
+  function parseRecords(text) { // 引用符内の改行に対応した簡易CSV。区切りは行ごとに判定（タブ > カンマ > 読点）
+    text = text.replace(/^\uFEFF/, '');
+    const records = []; let cur = '', q = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === '"') { q = !q; cur += ch; continue; }
+      if (!q && (ch === '\n' || ch === '\r')) { if (ch === '\r' && text[i + 1] === '\n') i++; if (cur.trim()) records.push(cur); cur = ''; continue; }
+      cur += ch;
+    }
+    if (cur.trim()) records.push(cur);
+    const sepOf = r => r.includes('\t') ? '\t' : /[,，]/.test(r) ? ',' : '、';
+    return { rows: records.map(r => splitCells(r, sepOf(r))) };
+  }
+  const num = v => { const x = String(v == null ? '' : v).replace(/[,，¥円\s]/g, ''); return x !== '' && !isNaN(x) ? Number(x) : null; };
+  const HEADER_MAP = { '管理番号': 'sku', '種別': 'kind', 'メーカー': 'maker', '型番': 'model', '別表記': 'alias', 'マウント': 'mount', 'グレード': 'grade', '商品の状態': 'condition', 'シャッター回数': 'shutter', '開始価格': 'start', '即決価格': 'bin', '下限メモ': 'floor', 'ステータス': 'status', '備考': 'notes', 'シリアル': 'serial' };
+  $('btn-bulk-add').addEventListener('click', () => {
+    const { rows } = parseRecords($('bulk-in').value);
+    if (!rows.length) { setStatus($('bulk-status'), '貼り付けた内容がありません', 'warn'); return; }
+    let header = null;
+    if (rows[0].includes('型番') && (rows[0].includes('種別') || rows[0].includes('メーカー'))) header = rows.shift().map(h => HEADER_MAP[h] || null);
+    let added = 0; const skipped = [], warnings = [];
+    rows.forEach((cells, idx) => {
+      const lineNo = idx + 1 + (header ? 1 : 0);
+      let rec = {};
+      if (header) header.forEach((k, i) => { if (k && cells[i] !== undefined) rec[k] = cells[i]; });
+      else { if (cells.length < 3) { skipped.push({ lineNo, cells, why: '列不足' }); return; } [rec.kind, rec.maker, rec.model, rec.grade, rec.start, rec.bin, rec.sku] = cells; }
+      rec = Object.fromEntries(Object.entries(rec).map(([k, v]) => [k, t(v)]));
+      if (!rec.maker || !rec.model) { skipped.push({ lineNo, cells, why: 'メーカーか型番が空' }); return; }
+      let kind = rec.kind || '';
+      if (kind && !KINDS.includes(kind)) { const k = KINDS.find(x => x.includes(kind) || kind.includes(x)); if (k) kind = k; }
+      if (!KINDS.includes(kind)) { const guess = /レンズ|mm/i.test(rec.model) ? '交換レンズ' : 'アクセサリー・その他'; if (kind) warnings.push(lineNo + '行目: 種別「' + kind + '」は不明のため' + guess + 'にしました'); kind = guess; }
+      const it = blankItem(); it.kind = kind; it.maker = rec.maker; it.model = rec.model;
+      if (rec.grade) { if (GRADES.some(g => g.id === rec.grade)) { it.grade = rec.grade; it.condition = gradeOf(it).cond; } else warnings.push(lineNo + '行目: グレード「' + rec.grade + '」は不明のため良品にしました'); }
+      if (rec.condition && CONDITIONS.includes(rec.condition)) it.condition = rec.condition;
+      const st = num(rec.start); if (st != null) it.start = st;
+      const bn = num(rec.bin); if (bn != null) it.bin = bn;
+      const fl = num(rec.floor); if (fl != null) it.floor = fl;
+      for (const k of ['sku', 'alias', 'mount', 'shutter', 'notes', 'serial']) if (rec[k]) it[k] = rec[k];
+      if (rec.status && STATUSES.includes(rec.status)) it.status = rec.status;
+      state.items.push(it); added++;
+    });
+    saveState(); renderList();
+    const parts = [added + ' 件追加'];
+    if (skipped.length) parts.push(skipped.length + ' 行はスキップ（' + skipped.slice(0, 3).map(s => s.lineNo + '行目: ' + s.why).join('、') + (skipped.length > 3 ? ' ほか' : '') + '）。スキップ行は入力欄に残しました');
+    if (warnings.length) parts.push(warnings.slice(0, 3).join('。') + (warnings.length > 3 ? ' ほか' + (warnings.length - 3) + '件' : ''));
+    setStatus($('bulk-status'), parts.join('。'), (skipped.length || warnings.length) ? 'warn' : '');
+    $('bulk-in').value = skipped.map(s => s.cells.join('\t')).join('\n');
   });
 
   // ===== 書き出し・復元 =====
@@ -761,24 +889,31 @@
     const rows = state.items.map(it => { const p = payout(it.bin, it, state.settings); return [it.sku, it.kind, it.maker, it.model, it.alias, it.mount, it.grade, it.condition, categoryOf(it).id, it.shutter, it.start, it.bin, it.floor, p ? p.net : '', it.status, titleOf(it), titleLength(titleOf(it)), descOf(it)]; });
     return '﻿' + [head].concat(rows).map(r => r.map(csvCell).join(',')).join('\r\n');
   }
-  function exportText() { return state.items.map((it, i) => `===== ${i + 1}. ${it.sku || ''} ${it.maker} ${it.model} =====\n${titleOf(it)}\n\n${descOf(it)}\n`).join('\n'); }
+  function exportText() { return state.items.map((it, i) => `===== ${i + 1}. ${it.sku || ''} ${fullName(it)} =====\n${titleOf(it)}\n\n${descOf(it)}\n`).join('\n'); }
+  const embedded = (() => { try { return window.self !== window.top; } catch (e) { return true; } })(); // 埋め込み表示（アーティファクト等）ではダウンロードが無効
   function setExport(text, filename, mime) {
     $('export-out').value = text; const a = $('dl-link');
-    const embedded = (() => { try { return window.self !== window.top; } catch (e) { return true; } })(); // 埋め込み表示（アーティファクト等）ではダウンロードが無効
     try { if (a.href && a.href.startsWith('blob:')) URL.revokeObjectURL(a.href); a.href = URL.createObjectURL(new Blob([text], { type: mime })); a.download = filename; a.hidden = embedded; } catch (e) { a.hidden = true; }
-    $('export-status').textContent = state.items.length + ' 件を書き出しました';
+    setStatus($('export-status'), state.items.length + ' 件を書き出しました' + (embedded ? '。この表示ではファイル保存できないので「コピー」でメモ等に貼ってください' : ''));
   }
   $('btn-export-csv').addEventListener('click', () => setExport(exportCSV(), 'saya-stock.csv', 'text/csv;charset=utf-8'));
   $('btn-export-text').addEventListener('click', () => setExport(exportText(), 'saya-listings.txt', 'text/plain;charset=utf-8'));
-  $('btn-export-json').addEventListener('click', () => setExport(JSON.stringify({ items: state.items, settings: state.settings, exportedAt: new Date().toISOString() }, null, 1), 'saya-backup.json', 'application/json'));
+  $('btn-export-json').addEventListener('click', () => { state.lastBackupAt = Date.now(); saveState(); renderList(); setExport(JSON.stringify({ items: state.items, settings: state.settings, exportedAt: new Date().toISOString() }, null, 1), 'saya-backup.json', 'application/json'); });
+  function parseImport() {
+    const data = JSON.parse($('import-in').value); const items = (Array.isArray(data) ? data : (data.items || [])).filter(r => r && typeof r === 'object' && r.model).map(normalizeItem);
+    return { items, settings: !Array.isArray(data) && data.settings && typeof data.settings === 'object' ? data.settings : null };
+  }
   $('btn-import').addEventListener('click', () => {
     try {
-      const data = JSON.parse($('import-in').value); const items = Array.isArray(data) ? data : (data.items || []);
-      const existing = new Set(state.items.map(i => i.id)); let n = 0;
-      for (const raw of items) { if (!raw || !raw.model) continue; const it = Object.assign(blankItem(), raw); if (existing.has(it.id)) it.id = uid(); state.items.push(it); n++; }
-      if (data.settings) state.settings = Object.assign({}, DEFAULT_SETTINGS, data.settings);
-      saveState(); renderList(); renderSettings(); $('import-status').textContent = n + ' 件を復元しました'; if (n) $('import-in').value = '';
-    } catch (e) { $('import-status').textContent = 'JSONとして読めませんでした'; }
+      const { items, settings } = parseImport(); const existing = new Set(state.items.map(i => i.id)); let n = 0, dup = 0;
+      for (const it of items) { if (existing.has(it.id)) { dup++; continue; } existing.add(it.id); state.items.push(it); n++; }
+      if (settings) state.settings = Object.assign({}, DEFAULT_SETTINGS, settings);
+      saveState(); renderList(); renderSettings(); renderOutputs(); setStatus($('import-status'), n + ' 件追加' + (dup ? '、' + dup + ' 件は既にあるためスキップ' : '')); if (n) $('import-in').value = '';
+    } catch (e) { setStatus($('import-status'), 'JSONとして読めませんでした', 'bad'); }
+  });
+  $('btn-import-replace').addEventListener('click', () => {
+    try { const { items, settings } = parseImport(); askConfirm({ type: 'replace', items, settings }, '今の在庫 ' + state.items.length + ' 件と既定値を、貼り付けた ' + items.length + ' 件で置き換えますか？'); showTab('list'); }
+    catch (e) { setStatus($('import-status'), 'JSONとして読めませんでした', 'bad'); }
   });
 
   // ===== 設定 =====
@@ -786,25 +921,24 @@
   fill(S.days, DAYS); fill(S.ship, SHIP_METHODS); fill(S.shipfee, SHIP_FEE); fill(S.ret, RETURNS); fill(S.endday, WEEKDAYS); fill(S.endhour, END_HOURS); fill(S.size, SHIP_SIZES);
   function renderSettings() { const s = state.settings; S.shop.value = s.shop || ''; S.kobutsu.value = s.kobutsu || ''; S.from.value = s.from || ''; S.days.value = s.days; S.ship.value = s.ship; S.shipfee.value = s.shipfee; S.ret.value = RETURN_TEXT[s.ret] ? s.ret : RETURNS[0]; S.endday.value = s.endday || '日曜'; S.endhour.value = s.endhour; S.size.value = s.size || '60サイズ'; S.footer.value = s.footer || ''; }
   $('btn-save-settings').addEventListener('click', () => {
-    state.settings = { shop: S.shop.value.trim(), kobutsu: S.kobutsu.value.trim(), from: S.from.value.trim(), days: S.days.value, ship: S.ship.value, shipfee: S.shipfee.value, ret: S.ret.value, endday: S.endday.value, endhour: S.endhour.value, size: S.size.value, footer: S.footer.value };
-    saveState(); renderOutputs(); $('settings-status').textContent = '保存しました'; setTimeout(() => { $('settings-status').textContent = ''; }, 2000);
+    state.settings = { shop: t(S.shop.value), kobutsu: t(S.kobutsu.value), from: t(S.from.value), days: S.days.value, ship: S.ship.value, shipfee: S.shipfee.value, ret: S.ret.value, endday: S.endday.value, endhour: S.endhour.value, size: S.size.value, footer: S.footer.value };
+    saveState(); renderOutputs(); setStatus($('settings-status'), '保存しました'); setTimeout(() => setStatus($('settings-status'), ''), 2000);
   });
 
   // ===== タブ =====
   const TABS = ['card', 'list', 'export', 'settings'];
   function showTab(name) {
-    TABS.forEach(t => { $('tab-' + t).setAttribute('aria-selected', String(t === name)); $('panel-' + t).hidden = t !== name; });
+    TABS.forEach(x => { $('tab-' + x).setAttribute('aria-selected', String(x === name)); $('panel-' + x).hidden = x !== name; });
     try { localStorage.setItem(STORAGE_KEY + ':tab', name); } catch (e) { /* ignore */ }
   }
-  TABS.forEach(t => $('tab-' + t).addEventListener('click', () => showTab(t)));
+  TABS.forEach(x => $('tab-' + x).addEventListener('click', () => showTab(x)));
 
   // ===== 起動 =====
   renderSettings(); renderForm(); renderList();
   let initialTab = 'card';
-  try { const h = (location.hash || '').replace('#', ''); if (TABS.includes(h)) initialTab = h; else { const t = localStorage.getItem(STORAGE_KEY + ':tab'); if (TABS.includes(t)) initialTab = t; } } catch (e) { /* ignore */ }
+  try { const h = (location.hash || '').replace('#', ''); if (TABS.includes(h)) initialTab = h; else { const tb = localStorage.getItem(STORAGE_KEY + ':tab'); if (TABS.includes(tb)) initialTab = tb; } } catch (e) { /* ignore */ }
   showTab(initialTab);
-  if (state.seeded && !state.items.some(i => !i.sample)) { draft = Object.assign(blankItem(), JSON.parse(JSON.stringify(state.items[0]))); editingId = state.items[0].id; renderForm(); }
-  window.SAYA = { genTitle, genDesc, titleLength, exportCSV, payout, categoryOf, state: () => state };
+  window.SAYA = { genTitle, genDesc, titleLength, exportCSV, payout, categoryOf, parseRecords, state: () => state };
 })();
 </script>
 </body>
